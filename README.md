@@ -41,3 +41,12 @@ node --experimental-strip-types --test tests/schedule.test.mjs
 ```
 
 `app/scheduler.tsx`: UI 및 편집 흐름. `lib/schedule.ts`: 편성·검증. `app/api/schedule/route.ts`: 서버 저장과 연간 집계.
+
+
+## Mobile export and GitHub Pages
+
+The calendar shows worker names on mobile. Print uses a single A4 landscape sheet. Image Save generates a PNG that can be downloaded or long-pressed on a phone.
+
+GitHub Pages builds the same editor with browser-local storage. Data is not shared between devices; use https://campusmong.mpgamesai.chatgpt.site for shared server storage. The Pages banner explains this distinction.
+
+In repository Settings → Pages, select GitHub Actions as the source. The included workflow builds and deploys on pushes to main. GitHub Free supports Pages for public repositories; private repositories require an eligible paid plan. Do not change repository visibility merely to enable deployment without reviewing the source first.
