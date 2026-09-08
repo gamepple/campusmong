@@ -47,7 +47,7 @@ node --experimental-strip-types --test tests/schedule.test.mjs
 
 The calendar shows worker names on mobile. Print uses a single A4 landscape sheet. Image Save generates a PNG that can be downloaded or long-pressed on a phone.
 
-GitHub Pages builds the same editor with browser-local storage. Data is not shared between devices; use https://campusmong.mpgamesai.chatgpt.site for shared server storage. The Pages banner explains this distinction.
+GitHub Pages builds the same editor with browser-local storage. Data is not shared between devices; use https://campusmong.jim46830.workers.dev for shared server storage. The Pages banner explains this distinction.
 
 In repository Settings → Pages, select GitHub Actions as the source. The included workflow builds and deploys on pushes to main. GitHub Free supports Pages for public repositories; private repositories require an eligible paid plan. Do not change repository visibility merely to enable deployment without reviewing the source first.
 
