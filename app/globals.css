@@ -23,29 +23,8 @@
 .people-manage-heading{margin-bottom:12px}.people-manage-heading .section-title{margin-bottom:3px}.people-manage-heading .section-title span{color:#7f90a8;font-size:13px;font-weight:500;margin-left:5px}.people-manage-heading p{font-size:13px;color:#8695aa}.rules-people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.managed-person{display:flex;align-items:center;border:1px solid #dfe7f1;border-radius:8px;background:#fbfcff;min-width:0}.managed-person-main{display:flex;align-items:center;gap:9px;flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:8px}.managed-person-main>span:last-child{min-width:0}.managed-person-main b{display:block;font-size:15px;overflow-wrap:anywhere}.managed-person-main small{display:block;font-size:12px;color:#8291a6}.delete-person{width:42px;min-height:48px;border:0;border-left:1px solid #e3e9f1;background:transparent;color:#a16c6c;display:grid;place-items:center}.add-person-card{padding:16px;border:1px solid #dfe7f1;border-radius:9px;background:#f7faff;margin-bottom:24px}.add-person-card h4{display:flex;align-items:center;gap:7px;font-size:15px;color:#45658f;margin-bottom:11px}.add-person-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}.add-person-form>input{min-width:0;border:1px solid #d6e0ed;border-radius:7px;padding:9px 10px;font-size:15px}.add-person-form .picker{margin:0}.add-person-card>p{font-size:12px;color:#8797ad;margin-top:10px}.dedication{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:27px 10px 6px;color:#8997aa;font-size:12px;text-align:center}.dedication span+span:before{content:'·';margin-right:8px;color:#b1bbc8}
 @media screen and (max-width:900px){.rules-people{grid-template-columns:1fr}.managed-person-main{min-height:58px}.delete-person{min-height:58px;width:48px}.add-person-form{grid-template-columns:1fr}.add-person-form>input,.add-person-form .picker,.add-person-form>.btn{width:100%!important;min-height:46px;font-size:16px}.dedication{padding:24px 12px 4px;line-height:1.7}.dedication span{width:100%}.dedication span+span:before{display:none}}
 @media print{.dedication{display:flex!important;padding:5px;font-size:9px}}
-/* 모바일 달력에서도 날짜별 근무자 약칭을 작게 확인할 수 있습니다. */
-@media screen and (max-width:900px){
-  .date-cell{min-height:104px;padding:2px 1px;vertical-align:top}
-  .date-cell>.shift-block{display:block;padding:2px 1px;margin:1px 0;border-radius:3px;overflow:hidden}
-  .date-cell>.shift-block .shift-label{font-size:8px;line-height:1.1;margin:0 0 1px;gap:1px}
-  .date-cell>.shift-block .shift-label svg{width:8px;height:8px}
-  .date-cell>.day-block{background:#fffaf0}
-  .date-cell>.night-block{background:#f0f3fa}
-  .date-cell>.day-block .day-assignments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
-  .date-cell>.shift-block .assignment{display:block;min-width:0;text-align:center;line-height:1.05}
-  .date-cell>.shift-block .assignment>span{display:none}
-  .date-cell>.shift-block .assignment b,.date-cell>.shift-block .night-assignment b{font-size:9px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:clip}
-  .date-cell>.night-block .night-assignments{grid-template-columns:repeat(6,minmax(0,1fr));gap:0}
-  .date-cell>.night-block .night-assignment{min-width:0;line-height:1.05}
-  .date-cell>.night-block .night-assignment small{font-size:7px;line-height:1}
-  .date-cell>.rest-row{display:flex;font-size:8px;line-height:1.1;margin:1px 0 0;gap:2px;white-space:nowrap;overflow:hidden}
-  .date-cell>.rest-row>span{font-size:8px;flex-shrink:0}
-  .date-cell>.rest-row>div{gap:2px;flex-wrap:nowrap;overflow:hidden}
-  .date-cell>.rest-row button{font-size:8px;line-height:1.1}
-}
 /* A fixed landscape image keeps the entire month on one physical sheet. */
 .print-sheet{display:none}.export-preview{width:100%;height:auto;margin:18px 0;border:1px solid #dfe5ee}.export-sheet{width:900px!important}
-@media screen and (max-width:900px){.date-cell>.night-block .night-assignments{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}.date-cell>.shift-block .night-assignment b{font-size:11px}.date-cell>.shift-block .assignment b{font-size:11px}.date-cell>.night-block .night-assignment small{font-size:8px}.date-cell>.rest-row{white-space:normal}.date-cell>.rest-row>div{flex-wrap:wrap}.date-heading{min-height:34px}.date-cell>.shift-block .night-assignment b{white-space:normal;overflow-wrap:anywhere}}
 @media print{
  @page{size:A4 landscape;margin:5mm}
  html,body{margin:0!important;padding:0!important;background:white!important;height:auto!important;overflow:visible!important}
@@ -57,3 +36,29 @@
 /* 근무지 약칭은 가볍게, 근무자 이름과 휴무·연가 이름은 또렷하게 표시합니다. */
 .assignment>span{font-weight:400}.rest-row>span{font-weight:500;white-space:nowrap}.rest-row>span::after{content:' :'}.rest-row button{font-weight:700;color:#65758c}.leave-row button{color:#b95e56}
 @media screen and (min-width:901px){.date-heading strong{font-size:20px}.assignment b,.night-assignment b{font-size:16px}.rest-row{font-size:11px}.rest-row button{font-size:13px}}
+
+/* 모바일에서는 한 달의 이름을 유지하되, 날짜별 내용을 일정한 카드로 정돈합니다. */
+@media screen and (max-width:900px){
+  .date-grid{gap:3px;padding:7px;background:#f5f7fb;align-items:stretch}
+  .date-cell{min-height:122px;padding:2px;background:#fff;border:1px solid #e7ebf2;border-radius:6px;overflow:hidden}
+  .date-cell.outside{background:transparent;border-color:transparent}
+  .date-heading{min-height:30px;margin:0 0 2px}
+  .date-heading strong{font-size:17px}
+  .date-cell>.shift-block{display:block;padding:3px 2px;margin:2px 0;border-radius:4px;overflow:hidden}
+  .date-cell>.shift-block .shift-label{font-size:8px;line-height:1;margin:0 0 2px;gap:1px}
+  .date-cell>.shift-block .shift-label svg{display:none}
+  .date-cell>.day-block .day-assignments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px}
+  .date-cell>.shift-block .assignment{display:block;min-width:0;text-align:center;line-height:1.1}
+  .date-cell>.shift-block .assignment>span{display:none}
+  .date-cell>.night-block .night-assignments{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 1px}
+  .date-cell>.night-block .night-assignment{min-width:0;line-height:1.05}
+  .date-cell>.shift-block .assignment b,.date-cell>.shift-block .night-assignment b{font-size:10px;line-height:1.15;white-space:normal;overflow-wrap:anywhere}
+  .date-cell>.night-block .night-assignment small{font-size:7px;line-height:1}
+  .date-cell>.rest-row{display:flex;font-size:8px;line-height:1.15;margin:3px 1px 0;gap:2px;white-space:normal;overflow:hidden}
+  .date-cell>.rest-row>span{font-size:8px;flex-shrink:0}
+  .date-cell>.rest-row>div{gap:2px;flex-wrap:wrap;overflow:hidden}
+  .date-cell>.rest-row button{font-size:8px;line-height:1.15}
+  .mobile-day-detail{border-top:1px solid #e1e7f0}
+  .calendar:not(.highlight-mong) .mong-tag,.mobile-shifts:not(.highlight-mong) .mong-tag{background:transparent!important;color:inherit!important;box-shadow:none!important}
+  .highlight-mong .mong-tag{background:#e2edff!important;color:#255ac6!important;box-shadow:inset 0 0 0 1px #a5c3f6}
+}
