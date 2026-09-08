@@ -44,4 +44,6 @@ export function sessionCookie(value: string) {
 }
 
 export const clearSessionCookie = "campusmong_editor=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
-export function editorIdMatches(value: string) { return value === (env.EDITOR_LOGIN_ID || "jhm7195"); }
+export function editorIdMatches(value: string) {
+  return Boolean(env.EDITOR_LOGIN_ID) && value === env.EDITOR_LOGIN_ID;
+}

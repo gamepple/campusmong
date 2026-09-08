@@ -50,3 +50,13 @@ The calendar shows worker names on mobile. Print uses a single A4 landscape shee
 GitHub Pages builds the same editor with browser-local storage. Data is not shared between devices; use https://campusmong.mpgamesai.chatgpt.site for shared server storage. The Pages banner explains this distinction.
 
 In repository Settings → Pages, select GitHub Actions as the source. The included workflow builds and deploys on pushes to main. GitHub Free supports Pages for public repositories; private repositories require an eligible paid plan. Do not change repository visibility merely to enable deployment without reviewing the source first.
+
+
+## Cloudflare shared deployment
+
+The Cloudflare Worker uses the `campusmong` D1 database through the `DB` binding. Configure the connected Cloudflare build with:
+
+- Build command: `npm run build`
+- Deploy command: `npm run deploy:cloudflare`
+
+The deploy command applies unapplied SQL migrations before publishing the Worker. Add `EDITOR_LOGIN_ID` and a long random `EDITOR_SESSION_SECRET` as encrypted production variables in Cloudflare. The server intentionally has no public fallback login ID.

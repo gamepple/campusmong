@@ -8,7 +8,7 @@ export async function localRequest(path:string,init?:RequestInit):Promise<Respon
  const editable=Number(localStorage.getItem(prefix+'editor')||0)>Date.now();
  const reply=(data:unknown,status=200)=>Response.json(data,{status});
  if(u.pathname==='/api/editor-session'){
-  if(method==='POST'){const {id}=JSON.parse(String(init?.body));if(id.trim()!=='jhm7195')return reply({error:'ID를 확인해 주세요.'},401);localStorage.setItem(prefix+'editor',String(Date.now()+30*86400000));return reply({canEdit:true});}
+  if(method==='POST'){const {id}=JSON.parse(String(init?.body));if(!id.trim())return reply({error:'ID를 입력해 주세요.'},401);localStorage.setItem(prefix+'editor',String(Date.now()+30*86400000));return reply({canEdit:true});}
   if(method==='DELETE'){localStorage.removeItem(prefix+'editor');return reply({canEdit:false});}return reply({canEdit:editable});
  }
  if(u.pathname!=='/api/schedule')return reply({error:'알 수 없는 요청입니다.'},404);

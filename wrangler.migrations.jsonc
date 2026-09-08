@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "campusmong-migrations",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "campusmong",
+      "database_id": "92b08f3b-61ce-407a-95e4-2738118a5498",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}
