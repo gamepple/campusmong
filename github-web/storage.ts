@@ -17,7 +17,7 @@ export async function localRequest(path:string,init?:RequestInit):Promise<Respon
   const {month,data,revision}=JSON.parse(String(init?.body));
   if(data.people.filter((p:{type:string})=>p.type==='D').length!==2)return reply({error:'주간 전담자를 2명으로 설정해 주세요.'},400);
   if((get(month)?.revision||0)!==revision)return reply({error:'다른 창에서 변경되었습니다. 백업 후 새로 불러와 주세요.'},409);
-  localStorage.setItem(prefix+month,JSON.stringify({data,revision:revision+1}));return reply({revision:revision+1});
+  const savedAt=new Date().toISOString();localStorage.setItem(prefix+month,JSON.stringify({data:{...data,savedAt},revision:revision+1}));return reply({revision:revision+1,savedAt});
  }
  const month=u.searchParams.get('month')!;const saved=get(month);const defaults=seed(month),annual:Record<string,number>={};
  const keys=Object.keys(localStorage).filter(k=>k.startsWith(prefix)&&/^20\d{2}-\d{2}$/.test(k.slice(prefix.length))).map(k=>k.slice(prefix.length)).sort();
