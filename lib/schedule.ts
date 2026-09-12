@@ -1,5 +1,5 @@
 export type Person={id:string;name:string;type:'D'|'N';off:number[];annual:number};
-export type Month={people:Person[];leave:Record<string,number[]>;rows:Record<string,Record<string,string>>;prev:Record<string,string>;next:Record<string,string>;note:string};
+export type Month={manualDays?:Record<string,boolean>;savedAt?:string;people:Person[];leave:Record<string,number[]>;rows:Record<string,Record<string,string>>;prev:Record<string,string>;next:Record<string,string>;note:string};
 export const weekdays=['일','월','화','수','목','금','토'];
 export const sites=['정문','후문','예관','소속관','유치원','창업관'];
 export const options=['O','L','D0','D1','N0','N1','N2','N3','N4','N5'];
@@ -13,8 +13,43 @@ const rests=vals.filter(v=>['O','L'].includes(v)).length;if(rests<2)out.push({da
 if(m.people.some(p=>p.type==='N'&&m.prev[p.id]==='U'))out.push({day:1,text:'전월 말 근무가 미확인입니다. 월 경계의 휴식 여부를 입력해 주세요.',level:'info'});if(m.people.some(p=>m.next[p.id]==='U'))out.push({day:n,text:'다음 달 1일 근무 미확인 · 월말 야간 이후 주간 전환을 확인해 주세요.',level:'info'});return out}
 export function stats(key:string,m:Month,id:string){const vals=Array.from({length:daysIn(key)},(_,i)=>m.rows[i+1]?.[id]);return {day:vals.filter(x=>x?.startsWith('D')).length,night:vals.filter(x=>x?.startsWith('N')).length,off:vals.filter(x=>x==='O').length,leave:vals.filter(x=>x==='L').length};}
 // 여러 대체 주간 조합을 탐색한다. 정기휴무·연가·전환 휴식을 어기며 빈자리를 채우지 않는다.
-export function generate(key:string,m:Month,attempts=180):Month {const n=daysIn(key);let best:Month={...m,rows:{}};let bestScore=Infinity;let randSeed=73;const rand=()=>{randSeed=(Math.imul(randSeed,1664525)+1013904223)>>>0;return randSeed/4294967296};const available=(p:Person,d:number)=>!p.off.includes(dow(key,d))&&!(m.leave[p.id]||[]).includes(d);
+export function generate(key:string,m:Month,attempts=180):Month {const n=daysIn(key);let best:Month={...m,manualDays:{},rows:{}};let bestScore=Infinity;let randSeed=73;const rand=()=>{randSeed=(Math.imul(randSeed,1664525)+1013904223)>>>0;return randSeed/4294967296};const available=(p:Person,d:number)=>!p.off.includes(dow(key,d))&&!(m.leave[p.id]||[]).includes(d);
 for(let run=0;run<attempts;run++){const day:Record<number,string[]>={};const cnt:Record<string,number>=Object.fromEntries(m.people.map(p=>[p.id,0]));for(let d=1;d<=n;d++){const ready=m.people.filter(p=>available(p,d)&&!(d===1&&p.type==='N'&&!['O','L','D0','D1','D'].includes(m.prev[p.id])));const priorities=Object.fromEntries(ready.map(p=>[p.id,(p.type==='D'?0:30)+cnt[p.id]*.3+rand()*5-((day[d-1]||[]).includes(p.id)?12:0)+(d<n&&m.people.filter(q=>q.type==='D'&&available(q,d+1)).length<2&&!available(p,d+1)?10:0)]));ready.sort((a,b)=>priorities[a.id]-priorities[b.id]);day[d]=ready.slice(0,2).map(p=>p.id);for(const id of day[d])cnt[id]++;}
 const rows:Month['rows']={};const nightCounts:Record<string,number>=Object.fromEntries(m.people.map(p=>[p.id,0]));for(let d=1;d<=n;d++){const row:Record<string,string>={};for(const p of m.people)row[p.id]=(m.leave[p.id]||[]).includes(d)?'L':'O';day[d].forEach((id,i)=>row[id]='D'+i);const ready=m.people.filter(p=>p.type==='N'&&available(p,d)&&!day[d].includes(p.id)&&!(day[d+1]||[]).includes(p.id)&&!(d===n&&m.next[p.id]?.startsWith('D')));ready.sort((a,b)=>nightCounts[a.id]-nightCounts[b.id]||a.id.localeCompare(b.id));const slots=[0,1,2,3,d%2?5:4];ready.slice(0,5).forEach((p,i)=>{row[p.id]='N'+slots[(i+d)%Math.min(ready.length,5)];nightCounts[p.id]++});rows[d]=row;}
-const candidate={...m,rows};const issues=inspect(key,candidate);const totals=m.people.filter(p=>p.type==='N').map(p=>{const s=stats(key,candidate,p.id);return s.day+s.night});const score=issues.filter(x=>x.level==='error').length*10000+Math.max(...totals)-Math.min(...totals);if(score<bestScore){bestScore=score;best=candidate;}}
+const candidate={...m,manualDays:{},rows};const issues=inspect(key,candidate);const totals=m.people.filter(p=>p.type==='N').map(p=>{const s=stats(key,candidate,p.id);return s.day+s.night});const score=issues.filter(x=>x.level==='error').length*10000+Math.max(...totals)-Math.min(...totals);if(score<bestScore){bestScore=score;best=candidate;}}
 return best}
+
+// Track explicit row edits only, leaving settings changes and automatic generation unmarked.
+export function markManualRows(before:Month,after:Month):Month{
+ const manualDays={...after.manualDays};
+ for(const day of new Set([...Object.keys(before.rows),...Object.keys(after.rows)])){
+  const a=before.rows[day]||{},b=after.rows[day]||{};
+  if([...new Set([...Object.keys(a),...Object.keys(b)])].some(id=>a[id]!==b[id]))manualDays[day]=true;
+ }
+ return {...after,manualDays};
+}
+export function leaveWithReplacement(key:string,m:Month,id:string,d:number,replacementId='',usedAnnual=0):Month{
+ if(!Number.isInteger(d)||d<1||d>daysIn(key))throw Error('연가 날짜를 확인해 주세요.');
+ const person=m.people.find(p=>p.id===id);if(!person)throw Error('근무자를 찾을 수 없습니다.');
+ if(!m.rows[d])throw Error('먼저 근무표를 만들어 주세요.');
+ if((m.leave[id]||[]).includes(d))throw Error('이미 연가로 등록된 날입니다.');
+ if(person.off.includes(dow(key,d)))throw Error('정기휴무일에는 연가를 등록할 수 없습니다.');
+ if(person.annual>0&&usedAnnual+(m.leave[id]||[]).length>=person.annual)throw Error('연간 연가 일수를 모두 사용했습니다.');
+ const next=structuredClone(m),post=m.rows[d][id];
+ if(replacementId){
+  const replacement=m.people.find(p=>p.id===replacementId);
+  if(!replacement||replacementId===id)throw Error('다른 대체 근무자를 선택해 주세요.');
+  if(!post||!['D','N'].includes(post[0]))throw Error('대체할 근무지가 없습니다. 대체자 없이 등록해 주세요.');
+  if(!['O','N4','N5'].includes(m.rows[d][replacementId]))throw Error('휴무 중이거나 선택 근무지에 배치된 분을 선택해 주세요.');
+  if(replacement.off.includes(dow(key,d))||(m.leave[replacementId]||[]).includes(d))throw Error('대체자의 정기휴무·연가를 확인해 주세요.');
+  if(replacement.type==='D'&&post.startsWith('N'))throw Error('주간 전담자는 야간 근무를 대신할 수 없습니다.');
+  const prev=d===1?m.prev[replacementId]:m.rows[d-1]?.[replacementId];
+  if(post.startsWith('D')&&(!prev||prev==='U'||prev.startsWith('N')))throw Error('대체자의 전날 근무와 휴식을 확인해 주세요.');
+  next.rows[d][replacementId]=post;
+ }
+ next.leave[id]=[...(m.leave[id]||[]),d].sort((a,b)=>a-b);next.rows[d][id]='L';
+ const oldErrors=new Set(inspect(key,m).filter(i=>i.level==='error').map(i=>i.day+':'+i.text));
+ const problems=inspect(key,next).filter(i=>i.level==='error'&&(i.day===d||(i.day===d+1&&!oldErrors.has(i.day+':'+i.text))));
+ if(problems.length)throw Error(problems.map(i=>i.text).join(' · '));
+ return markManualRows(m,next);
+}
