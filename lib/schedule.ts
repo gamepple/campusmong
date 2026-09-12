@@ -53,3 +53,31 @@ export function leaveWithReplacement(key:string,m:Month,id:string,d:number,repla
  if(problems.length)throw Error(problems.map(i=>i.text).join(' · '));
  return markManualRows(m,next);
 }
+
+// Validate both sides before applying a placement or swap; the original stays intact on failure.
+export function placeAtPost(key:string,m:Month,d:number,post:string,id:string):Month{
+ if(!Number.isInteger(d)||d<1||d>daysIn(key)||!options.includes(post)||post.length!==2)throw Error('날짜와 근무지를 확인해 주세요.');
+ const row=m.rows[d];if(!row)throw Error('먼저 근무표를 만들어 주세요.');
+ const selected=m.people.find(p=>p.id===id);if(!selected)throw Error('근무자를 찾을 수 없습니다.');
+ const occupants=m.people.filter(p=>row[p.id]===post);
+ if(occupants.length>1)throw Error('이 근무지의 중복 배치를 먼저 정리해 주세요.');
+ if(row[id]===post)return m;
+ const old=row[id]||'O',current=occupants[0];
+ const next=structuredClone(m);
+ next.rows[d][id]=post;
+ if(current)next.rows[d][current.id]=old;
+ for(const p of [selected,...(current?[current]:[])]){
+  const value=next.rows[d][p.id];
+  if(row[p.id]==='L'||(m.leave[p.id]||[]).includes(d))throw Error(p.name+' 님은 연가 중입니다.');
+  if(value==='O')continue;
+  if(!options.includes(value)||value.length!==2)throw Error('기존 근무를 먼저 확인해 주세요.');
+  if(p.off.includes(dow(key,d)))throw Error(p.name+' 님의 정기휴무일입니다.');
+  if(p.type==='D'&&value.startsWith('N'))throw Error(p.name+' 님은 주간 전담입니다.');
+  const before=d===1?m.prev[p.id]:m.rows[d-1]?.[p.id];
+  const after=d===daysIn(key)?m.next[p.id]:m.rows[d+1]?.[p.id];
+  if(value.startsWith('D')&&(before?.startsWith('N')||(p.type==='N'&&(!before||before==='U'))))throw Error(p.name+' 님의 전날 근무와 휴식을 확인해 주세요.');
+  if(value.startsWith('N')&&after?.startsWith('D'))throw Error(p.name+' 님은 다음 날 주간 근무가 있습니다.');
+ }
+ if(!current&&['D0','D1','N0','N1','N2','N3'].includes(old))throw Error('이동하면 기존 필수 근무지가 비게 됩니다. 교환할 근무자를 먼저 배치해 주세요.');
+ return markManualRows(m,next);
+}
