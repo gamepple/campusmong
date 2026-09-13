@@ -3,6 +3,20 @@ import { env } from "cloudflare:workers";
 const encoder = new TextEncoder();
 const SESSION_AGE = 60 * 60 * 24 * 30;
 
+function editorLoginId() {
+  const value =
+    env.EDITOR_LOGIN_ID ??
+    (typeof process !== "undefined" ? process.env.EDITOR_LOGIN_ID : undefined);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function editorSessionSecret() {
+  const value =
+    env.EDITOR_SESSION_SECRET ??
+    (typeof process !== "undefined" ? process.env.EDITOR_SESSION_SECRET : undefined);
+  return typeof value === "string" ? value : "";
+}
+
 function bytesToBase64Url(bytes: Uint8Array) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -10,8 +24,9 @@ function bytesToBase64Url(bytes: Uint8Array) {
 }
 
 async function signature(value: string) {
-  if (!env.EDITOR_SESSION_SECRET) throw new Error("Editor authentication is unavailable");
-  const key = await crypto.subtle.importKey("raw", encoder.encode(env.EDITOR_SESSION_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const secret = editorSessionSecret();
+  if (!secret) throw new Error("Editor authentication is unavailable");
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return bytesToBase64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
 
@@ -45,5 +60,6 @@ export function sessionCookie(value: string) {
 
 export const clearSessionCookie = "campusmong_editor=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
 export function editorIdMatches(value: string) {
-  return Boolean(env.EDITOR_LOGIN_ID) && value === env.EDITOR_LOGIN_ID;
+  const configuredId = editorLoginId();
+  return Boolean(configuredId) && value.trim() === configuredId;
 }
