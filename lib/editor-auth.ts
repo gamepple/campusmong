@@ -26,6 +26,7 @@ function editorSessionSecret(request?: Request) {
 
 export function editorAuthStatus(request: Request) {
   return {
+    revision: "2026-09-13.1",
     loginSource: runtimeEditorLoginId(request) ? "environment" : "fallback",
     sessionConfigured: Boolean(editorSessionSecret(request)),
   };
