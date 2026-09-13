@@ -5,6 +5,8 @@ import handler from "vinext/server/app-router-entry";
 interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
+  EDITOR_LOGIN_ID?: string;
+  EDITOR_SESSION_SECRET?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -40,7 +42,17 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    // Vinext normally exposes bindings through cloudflare:workers. Forward the
+    // two authentication bindings from the Worker fetch environment as an
+    // additional reliable path. Incoming values are always removed first so a
+    // visitor cannot supply or override these internal headers.
+    const headers = new Headers(request.headers);
+    headers.delete("x-campusmong-editor-id");
+    headers.delete("x-campusmong-session-secret");
+    if (env.EDITOR_LOGIN_ID) headers.set("x-campusmong-editor-id", env.EDITOR_LOGIN_ID);
+    if (env.EDITOR_SESSION_SECRET) headers.set("x-campusmong-session-secret", env.EDITOR_SESSION_SECRET);
+
+    return handler.fetch(new Request(request, { headers }), env, ctx);
   },
 };
 
